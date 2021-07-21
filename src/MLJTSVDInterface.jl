@@ -1,11 +1,10 @@
-module MLJExampleInterface
+module MLJTSVDInterface
 
-# Example.jl doesn't actually provide machine learning models, so we
-# provide a module below with the same name to furnish us with simple
-# constant probabilistic classification. Note that `Example.fit`
-# ignores the training features `Xmatrix`.
+# The following module is just bootstrap code to make this a working
+# template. You will remove this module and replace "import .TSVD"
+# below with "import TSVD".
 
-module Example
+module TSVD
 
 function fit(Xmatrix::Matrix, yint::AbstractVector{<:Integer})
     classes = sort(unique(yint))
@@ -36,11 +35,11 @@ end # of module
 
 ### CONTINUATION OF TEMPLATE
 
-import .Example # substitute model-providing package name here (no dot)
+import .TSVD # substitute model-providing package name here (no dot)
 import MLJModelInterface
 import ScientificTypesBase
 
-const PKG = "Example"          # substitute model-providing package name
+const PKG = "TSVD"          # substitute model-providing package name
 const MMI = MLJModelInterface
 const STB = ScientificTypesBase
 
@@ -66,7 +65,7 @@ function MMI.fit(::CoolProbabilisticClassifier, verbosity, X, y)
     decode = MMI.decoder(y[1])                # for decoding int repr.
     classes_seen = decode(sort(unique(yint))) # ordered by int repr.
 
-    Θ = Example.fit(Xmatrix, yint)            # probability vector
+    Θ = TSVD.fit(Xmatrix, yint)            # probability vector
     fitresult = (Θ, classes_seen)
     report = (n_classes_seen = length(classes_seen),)
     cache = nothing
@@ -79,7 +78,7 @@ function MMI.predict(::CoolProbabilisticClassifier, fitresult, Xnew)
     Xmatrix = MMI.matrix(Xnew)
 
     Θ, classes_seen = fitresult
-    prob_matrix = Example.predict(Xmatrix, Θ)
+    prob_matrix = TSVD.predict(Xmatrix, Θ)
 
     # `classes_seen` is a categorical vector whose pool actually
     # includes *all* classes. The `UnivariateFinite` constructor
@@ -100,7 +99,7 @@ end
 MMI.metadata_pkg(CoolProbabilisticClassifier,
              name="$PKG",
              uuid="7876af07-990d-54b4-ab0e-23690620f79a",
-             url="https://github.com/JuliaLang/Example.jl",
+             url="https://github.com/JuliaLang/TSVD.jl",
              is_pure_julia=true,
              license="MIT",
              is_wrapper=false
