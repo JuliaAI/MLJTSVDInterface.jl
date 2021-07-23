@@ -43,8 +43,8 @@ function MMI.fitted_params(::TSVDTransformer, fitresult)
     return (singular_values = singular_values, components = components)
 end
 
-function MMI.transform(::TSVDTransformer, result, X)
-    Xtransformed = X * result.components
+function MMI.transform(::TSVDTransformer, fitresult, X)
+    Xtransformed = X * fitresult.components
 
     return Xtransformed
 end
@@ -54,8 +54,8 @@ end
 
 MMI.metadata_pkg(TSVDTransformer,
              name="$PKG",
-             uuid="7876af07-990d-54b4-ab0e-23690620f79a",
-             url="https://github.com/JuliaAI/MLJTSVDInterface.jl",
+             uuid="9449cd9e-2762-5aa3-a617-5413e99d722e",
+             url="https://github.com/JuliaLinearAlgebra/TSVD.jl",
              is_pure_julia=true,
              license="MIT",
              is_wrapper=false
@@ -65,7 +65,7 @@ MMI.metadata_model(TSVDTransformer,
                input_scitype = Union{MMI.Table(STB.Continuous),AbstractMatrix{STB.Continuous}},
                output_scitype = Union{MMI.Table(STB.Continuous),AbstractMatrix{STB.Continuous}},
                docstring = "Truncated SVD dimensionality reduction",         # brief description
-               path = "$PKG.TSVDTransformer"
+               path = "MLJTSVDInterface.TSVDTransformer"
                )
 
 end # module

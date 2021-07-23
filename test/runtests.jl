@@ -1,24 +1,43 @@
 using MLJTSVDInterface # substitute for correct interface pkg name
 using Test
-using MLJBase
-import Distributions
+using TSVD
+using SparseArrays
 using StableRNGs # for RNGs stable across all julia versions
 rng = StableRNGs.StableRNG(123)
 
-@testset "cool classifier" begin
-    n = 100
-    p = 3
-    nclasses = 5
-    X, y = make_blobs(n, p, centers=nclasses, rng=rng);
-    model = MLJTSVDInterface.CoolProbabilisticClassifier()
-    mach = machine(model, X, y)
-    fit!(mach, rows=1:2, verbosity=0)
-    yhat = predict(mach, rows=3)
-    @test size(Distributions.pdf(yhat, levels(y)) ) == (1, nclasses)
+@testset "tsvd transformer" begin
+    n = 10
+    p = 20
+    prob_nonzero = 0.5
 
-    e = evaluate!(mach, measure=BrierLoss(), verbosity=0)
-    @test e.measurement[1] < 1.0
+    # test with a sparse matrix
+    X_sparse = sprand(rng, n, p, prob_nonzero)
 
-    @test fitted_params(mach).classes_seen_in_training == levels(y)
-    @test report(mach).n_classes_seen == nclasses
+    # use defaults - transform into an n x 2 dense matrix
+    model = MLJTSVDInterface.TSVDTransformer()
+
+    mach = machine(model, X_sparse)
+    fit!(mach)
+    X_transformed = transform(mach, X_sparse)
+
+    # also do the raw transformation with TSVD library
+    U, s, V = tsvd(X_sparse, 2)
+
+    @test size(X_transformed) == (10, 2)
+    @test isapprox(s, fitted_params(mach).singular_values)
+    @test isapprox(abs.(V), abs.(fitted_params(mach).components))
+
+    # test with a dense matrix
+    X_dense = rand(rng, n, p)
+
+    mach = machine(model, X_dense)
+    fit!(mach)
+    X_transformed = transform(mach, X_dense)
+
+    # also do the raw transformation with TSVD library
+    U, s, V = tsvd(X_dense, 2)
+
+    @test size(X_transformed) == (10, 2)
+    @test isapprox(s, fitted_params(mach).singular_values)
+    @test isapprox(abs.(V), abs.(fitted_params(mach).components))
 end
