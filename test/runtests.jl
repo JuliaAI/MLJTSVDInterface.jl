@@ -1,6 +1,7 @@
 using MLJTSVDInterface # substitute for correct interface pkg name
 using Test
 using TSVD
+using MLJBase
 using SparseArrays
 using StableRNGs # for RNGs stable across all julia versions
 rng = StableRNGs.StableRNG(123)
