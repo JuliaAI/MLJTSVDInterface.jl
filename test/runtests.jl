@@ -26,7 +26,7 @@ rng = StableRNGs.StableRNG(123)
 
     @test size(X_transformed) == (10, 2)
     @test isapprox(s, fitted_params(mach).singular_values)
-    @test isapprox(abs.(V), abs.(fitted_params(mach).components))
+    @test size(V) == size(fitted_params(mach).components)
 
     # test with a dense matrix
     X_dense = rand(rng, n, p)
@@ -40,5 +40,5 @@ rng = StableRNGs.StableRNG(123)
 
     @test size(X_transformed) == (10, 2)
     @test isapprox(s, fitted_params(mach).singular_values)
-    @test isapprox(abs.(V), abs.(fitted_params(mach).components))
+    @test size(V) == size(fitted_params(mach).components)
 end
