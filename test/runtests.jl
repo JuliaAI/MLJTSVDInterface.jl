@@ -18,7 +18,7 @@ rng = StableRNGs.StableRNG(123)
     model = MLJTSVDInterface.TSVDTransformer()
 
     mach = machine(model, X_sparse)
-    fit!(mach)
+    fit!(mach, verbosity=0)
     X_transformed = transform(mach, X_sparse)
 
     # also do the raw transformation with TSVD library
@@ -32,7 +32,7 @@ rng = StableRNGs.StableRNG(123)
     X_dense = rand(rng, n, p)
 
     mach = machine(model, X_dense)
-    fit!(mach)
+    fit!(mach, verbosity=0)
     X_transformed = transform(mach, X_dense)
 
     # also do the raw transformation with TSVD library
