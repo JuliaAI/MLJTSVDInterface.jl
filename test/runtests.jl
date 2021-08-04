@@ -46,7 +46,7 @@ rng = StableRNGs.StableRNG(123)
     X, _ = make_regression(100, 5)
     mach = machine(model, X)
     fit!(mach, verbosity=0)
-    X_transformed = transform(mach, X_dense)
+    X_transformed = transform(mach, X)
     
     @test length(keys(X_transformed)) == 2
 end
