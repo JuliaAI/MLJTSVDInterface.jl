@@ -41,4 +41,12 @@ rng = StableRNGs.StableRNG(123)
     @test size(X_transformed) == (10, 2)
     @test isapprox(s, fitted_params(mach).singular_values)
     @test size(V) == size(fitted_params(mach).components)
+
+    # test tables
+    X, _ = make_regression(100, 5)
+    mach = machine(model, X)
+    fit!(mach, verbosity=0)
+    X_transformed = transform(mach, X)
+    
+    @test length(keys(X_transformed)) == 2
 end
