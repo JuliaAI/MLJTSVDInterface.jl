@@ -26,11 +26,17 @@ end
 struct TSVDTransformerResult
     singular_values::Vector{Float64}
     components::Matrix{Float64}
+    is_table::Bool
 end
 
-function MMI.fit(transformer::TSVDTransformer, verbosity, X)
+as_matrix(X) = MMI.matrix(X)
+as_matrix(X::AbstractArray) = X
+
+function MMI.fit(transformer::TSVDTransformer, verbosity, Xuser)
+    X = as_matrix(Xuser)
     U, s, V = TSVD.tsvd(X, transformer.nvals; maxiter=transformer.maxiter)
-    fitresult = TSVDTransformerResult(s, V)
+    is_table = ~isa(Xuser, AbstractArray)
+    fitresult = TSVDTransformerResult(s, V, is_table)
     cache = nothing
 
     return fitresult, cache, NamedTuple()
@@ -40,11 +46,17 @@ end
 function MMI.fitted_params(::TSVDTransformer, fitresult)
     singular_values = fitresult.singular_values
     components = fitresult.components
-    return (singular_values = singular_values, components = components)
+    is_table = fitresult.is_table
+    return (singular_values = singular_values, components = components, is_table=is_table)
 end
 
-function MMI.transform(::TSVDTransformer, fitresult, X)
+function MMI.transform(::TSVDTransformer, fitresult, Xuser)
+    X = as_matrix(Xuser)
     Xtransformed = X * fitresult.components
+
+    if fitresult.is_table
+        Xtransformed = MMI.table(Xtransformed)
+    end
 
     return Xtransformed
 end
