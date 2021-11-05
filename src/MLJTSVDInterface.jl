@@ -3,6 +3,7 @@ module MLJTSVDInterface
 import TSVD
 import MLJModelInterface
 import ScientificTypesBase
+using Random: AbstractRNG, MersenneTwister
 
 const PKG = "TSVD"
 const MMI = MLJModelInterface
@@ -18,9 +19,10 @@ decomposition (SVD). Contrary to PCA, this estimator does not center the data be
 the singular value decomposition. This means it can work with sparse matrices efficiently.
 
 """
-MMI.@mlj_model mutable struct TSVDTransformer <: MLJModelInterface.Unsupervised
+MMI.@mlj_model mutable struct TSVDTransformer{R <: AbstractRNG} <: MLJModelInterface.Unsupervised
     nvals::Int = 2
     maxiter::Int = 1000
+    rng::R = MersenneTwister(0)
 end
 
 struct TSVDTransformerResult
@@ -34,7 +36,12 @@ as_matrix(X::AbstractArray) = X
 
 function MMI.fit(transformer::TSVDTransformer, verbosity, Xuser)
     X = as_matrix(Xuser)
-    U, s, V = TSVD.tsvd(X, transformer.nvals; maxiter=transformer.maxiter)
+    U, s, V = TSVD.tsvd(
+        X,
+        transformer.nvals;
+        maxiter=transformer.maxiter,
+        initvec = convert(Vector{float(eltype(X))}, randn(transformer.rng, size(X,1)))
+    )
     is_table = ~isa(Xuser, AbstractArray)
     fitresult = TSVDTransformerResult(s, V, is_table)
     cache = nothing
