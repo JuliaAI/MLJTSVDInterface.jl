@@ -19,11 +19,14 @@ decomposition (SVD). Contrary to PCA, this estimator does not center the data be
 the singular value decomposition. This means it can work with sparse matrices efficiently.
 
 """
-MMI.@mlj_model mutable struct TSVDTransformer{R <: AbstractRNG} <: MLJModelInterface.Unsupervised
-    nvals::Int = 2
-    maxiter::Int = 1000
-    rng::R = MersenneTwister(0)
+mutable struct TSVDTransformer{R <: AbstractRNG} <: MLJModelInterface.Unsupervised
+    nvals::Int
+    maxiter::Int
+    rng::R
 end
+
+TSVDTransformer(; nvals::Int=2, maxiter::Int=1000, rng::R=MersenneTwister(0)) where {R <: AbstractRNG} = 
+    TSVDTransformer{R}(nvals, maxiter, rng)
 
 struct TSVDTransformerResult
     singular_values::Vector{Float64}
