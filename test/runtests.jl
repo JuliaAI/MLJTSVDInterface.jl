@@ -16,7 +16,7 @@ const rng = StableRNGs.StableRNG(123)
     X_sparse = sprand(rng, n, p, prob_nonzero)
 
     # use defaults - transform into an n x 2 dense matrix
-    model = MLJTSVDInterface.TSVDTransformer(rng=rng)
+    model = MLJTSVDInterface.TSVDTransformer(rng=42)
 
     mach = machine(model, X_sparse)
     fit!(mach, verbosity=0)
