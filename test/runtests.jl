@@ -4,7 +4,8 @@ using TSVD
 using MLJBase
 using SparseArrays
 using StableRNGs # for RNGs stable across all julia versions
-rng = StableRNGs.StableRNG(123)
+
+const rng = StableRNGs.StableRNG(123)
 
 @testset "tsvd transformer" begin
     n = 10
@@ -15,7 +16,7 @@ rng = StableRNGs.StableRNG(123)
     X_sparse = sprand(rng, n, p, prob_nonzero)
 
     # use defaults - transform into an n x 2 dense matrix
-    model = MLJTSVDInterface.TSVDTransformer()
+    model = MLJTSVDInterface.TSVDTransformer(rng=42)
 
     mach = machine(model, X_sparse)
     fit!(mach, verbosity=0)
