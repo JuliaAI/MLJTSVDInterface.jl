@@ -22,7 +22,7 @@ the singular value decomposition. This means it can work with sparse matrices ef
 MMI.@mlj_model mutable struct TSVDTransformer <: MLJModelInterface.Unsupervised
     nvals::Int = 2
     maxiter::Int = 1000
-    rng::Untion{Int, AbstractRNG} = GLOBAL_RNG
+    rng::Union{Int, AbstractRNG} = GLOBAL_RNG
 end
 
 struct TSVDTransformerResult
@@ -40,7 +40,7 @@ _get_rng(rng) = rng
 function MMI.fit(transformer::TSVDTransformer, verbosity, Xuser)
     X = as_matrix(Xuser)
     rng = _get_rng(transformer.rng)
-    
+
     U, s, V = TSVD.tsvd(
         X,
         transformer.nvals;
