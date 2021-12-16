@@ -3,6 +3,7 @@ module MLJTSVDInterface
 import TSVD
 import MLJModelInterface
 import ScientificTypesBase
+using Random: MersenneTwister, AbstractRNG, GLOBAL_RNG
 
 const PKG = "TSVD"
 const MMI = MLJModelInterface
@@ -21,16 +22,33 @@ the singular value decomposition. This means it can work with sparse matrices ef
 MMI.@mlj_model mutable struct TSVDTransformer <: MLJModelInterface.Unsupervised
     nvals::Int = 2
     maxiter::Int = 1000
+    rng::Union{Int, AbstractRNG} = GLOBAL_RNG
 end
 
 struct TSVDTransformerResult
     singular_values::Vector{Float64}
     components::Matrix{Float64}
+    is_table::Bool
 end
 
-function MMI.fit(transformer::TSVDTransformer, verbosity, X)
-    U, s, V = TSVD.tsvd(X, transformer.nvals; maxiter=transformer.maxiter)
-    fitresult = TSVDTransformerResult(s, V)
+as_matrix(X) = MMI.matrix(X)
+as_matrix(X::AbstractArray) = X
+
+_get_rng(rng::Int) = MersenneTwister(rng)
+_get_rng(rng) = rng
+
+function MMI.fit(transformer::TSVDTransformer, verbosity, Xuser)
+    X = as_matrix(Xuser)
+    rng = _get_rng(transformer.rng)
+
+    U, s, V = TSVD.tsvd(
+        X,
+        transformer.nvals;
+        maxiter=transformer.maxiter,
+        initvec = convert(Vector{float(eltype(X))}, randn(rng, size(X,1)))
+    )
+    is_table = ~isa(Xuser, AbstractArray)
+    fitresult = TSVDTransformerResult(s, V, is_table)
     cache = nothing
 
     return fitresult, cache, NamedTuple()
@@ -40,11 +58,17 @@ end
 function MMI.fitted_params(::TSVDTransformer, fitresult)
     singular_values = fitresult.singular_values
     components = fitresult.components
-    return (singular_values = singular_values, components = components)
+    is_table = fitresult.is_table
+    return (singular_values = singular_values, components = components, is_table=is_table)
 end
 
-function MMI.transform(::TSVDTransformer, fitresult, X)
+function MMI.transform(::TSVDTransformer, fitresult, Xuser)
+    X = as_matrix(Xuser)
     Xtransformed = X * fitresult.components
+
+    if fitresult.is_table
+        Xtransformed = MMI.table(Xtransformed)
+    end
 
     return Xtransformed
 end
