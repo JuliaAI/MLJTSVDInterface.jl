@@ -16,7 +16,7 @@ const rng = StableRNGs.StableRNG(123)
     X_sparse = sprand(rng, n, p, prob_nonzero)
 
     # use defaults - transform into an n x 2 dense matrix
-    model = MLJTSVDInterface.TSVDTransformer(rng=42)
+    model = TSVDTransformer(rng=42)
 
     mach = machine(model, X_sparse)
     fit!(mach, verbosity=0)
@@ -50,4 +50,18 @@ const rng = StableRNGs.StableRNG(123)
     X_transformed = transform(mach, X)
     
     @test length(keys(X_transformed)) == 2
+
+    # test with default RNG
+    model = TSVDTransformer()
+
+    mach = machine(model, X_sparse)
+    fit!(mach, verbosity=0)
+    X_transformed = transform(mach, X_sparse)
+
+    # also do the raw transformation with TSVD library
+    U, s, V = tsvd(X_sparse, 2)
+
+    @test size(X_transformed) == (10, 2)
+    @test isapprox(s, fitted_params(mach).singular_values)
+    @test size(V) == size(fitted_params(mach).components)
 end
