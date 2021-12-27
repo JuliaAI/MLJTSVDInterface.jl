@@ -2,12 +2,10 @@ module MLJTSVDInterface
 
 import TSVD
 import MLJModelInterface
-import ScientificTypesBase
 using Random: MersenneTwister, AbstractRNG, GLOBAL_RNG
 
 const PKG = "TSVD"
 const MMI = MLJModelInterface
-const STB = ScientificTypesBase
 
 """
     TSVDTransformer()
@@ -86,8 +84,8 @@ MMI.metadata_pkg(TSVDTransformer,
 )
 
 MMI.metadata_model(TSVDTransformer,
-               input_scitype = Union{MMI.Table(STB.Continuous),AbstractMatrix{STB.Continuous}},
-               output_scitype = Union{MMI.Table(STB.Continuous),AbstractMatrix{STB.Continuous}},
+               input_scitype = Union{MMI.Table(MMI.Continuous),AbstractMatrix{MMI.Continuous}},
+               output_scitype = Union{MMI.Table(MMI.Continuous),AbstractMatrix{MMI.Continuous}},
                docstring = "Truncated SVD dimensionality reduction",         # brief description
                path = "MLJTSVDInterface.TSVDTransformer"
                )
