@@ -12,8 +12,8 @@ const MMI = MLJModelInterface
 
 Dimensionality reduction using truncated SVD.
 
-This transformer performs linear dimensionality reduction by means of truncated singular value 
-decomposition (SVD). Contrary to PCA, this estimator does not center the data before computing 
+This transformer performs linear dimensionality reduction by means of truncated singular value
+decomposition (SVD). Contrary to PCA, this estimator does not center the data before computing
 the singular value decomposition. This means it can work with sparse matrices efficiently.
 
 """
@@ -89,5 +89,62 @@ MMI.metadata_model(TSVDTransformer,
                docstring = "Truncated SVD dimensionality reduction",         # brief description
                path = "MLJTSVDInterface.TSVDTransformer"
                )
+
+"""
+$(MMI.doc_header(TSVDTransformer))
+`TSVDTransformer`: Dimensionality reduction using truncated SVD. This transformer performs
+linear dimensionality reduction by means of truncated singular value decomposition (SVD).
+Contrary to PCA, this estimator does not center the data before computing the singular value
+decomposition. This means it can work with sparse matrices efficiently.
+
+
+# Training data
+In MLJ or MLJBase, bind an instance `model` to data with
+    mach = machine(model, X, y)
+Here:
+
+- `X` is any table of input features (eg, a `DataFrame`) whose columns
+  are of scitype `Continuous`; check the column scitypes with `schema(X)`
+
+Train the machine using `fit!(mach, rows=...)`.
+
+# Operations
+
+- `transform(mach, Xnew)`: return compressed representation of the target given new features `Xnew`, which
+  should have the same scitype as `X` above.
+
+# Hyper-parameters
+
+- `nvals=2`: The number of singular values and vectors to compute.
+- `maxiter=1000`: The maximum number if iterations to use. Defaults to 1000, however likely
+  will finish before this
+- `rng`: The random number generator to use, either an `Int` or an `AbstractRNG`.
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `singular_values`: The estimated singular values, stored as a vector.
+- `components`: The estimated component vectors, stored as a matrix.
+- `is_table`: Whether or not the input data is a table.
+
+# Examples
+
+```julia
+using MLJ
+using Test
+SVD = @load TSVDTransformer pkg=TSVD
+X, y = @load_iris
+svd = SVD(nvals=3)
+mach = machine(svd, X) |> fit!
+(; singular_values, components) =  fitted_params(mach)
+preds = transform(mach, X)
+
+to_matrix(x) = hcat(values(x)...)
+
+@test sum(round.((to_matrix(preds) * components') - to_matrix(X))) == 0
+```
+"""
+TSVDTransformer
 
 end # module
