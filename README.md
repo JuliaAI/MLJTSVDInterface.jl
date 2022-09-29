@@ -1,4 +1,4 @@
-# MLJ.jl <--> TSVD.jl
+# MLJTSVDInterface.jl
 
 Repository implementing the [MLJ](https://alan-turing-institute.github.io/MLJ.jl/dev/) model interface for models provided by
 [TSVD.jl](https://github.com/JuliaLinearAlgebra/TSVD.jl).
