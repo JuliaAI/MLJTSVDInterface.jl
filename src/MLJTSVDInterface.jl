@@ -7,16 +7,6 @@ using Random: MersenneTwister, AbstractRNG, GLOBAL_RNG
 const PKG = "TSVD"
 const MMI = MLJModelInterface
 
-"""
-    TSVDTransformer()
-
-Dimensionality reduction using truncated SVD.
-
-This transformer performs linear dimensionality reduction by means of truncated singular value 
-decomposition (SVD). Contrary to PCA, this estimator does not center the data before computing 
-the singular value decomposition. This means it can work with sparse matrices efficiently.
-
-"""
 MMI.@mlj_model mutable struct TSVDTransformer <: MLJModelInterface.Unsupervised
     nvals::Int = 2
     maxiter::Int = 1000
@@ -74,20 +64,115 @@ end
 
 ## META DATA
 
-MMI.metadata_pkg(TSVDTransformer,
-             name="$PKG",
-             uuid="9449cd9e-2762-5aa3-a617-5413e99d722e",
-             url="https://github.com/JuliaLinearAlgebra/TSVD.jl",
-             is_pure_julia=true,
-             license="MIT",
-             is_wrapper=false
+MMI.metadata_pkg(
+    TSVDTransformer,
+    name="$PKG",
+    uuid="9449cd9e-2762-5aa3-a617-5413e99d722e",
+    url="https://github.com/JuliaLinearAlgebra/TSVD.jl",
+    is_pure_julia=true,
+    license="MIT",
+    is_wrapper=false
 )
 
-MMI.metadata_model(TSVDTransformer,
-               input_scitype = Union{MMI.Table(MMI.Continuous),AbstractMatrix{MMI.Continuous}},
-               output_scitype = Union{MMI.Table(MMI.Continuous),AbstractMatrix{MMI.Continuous}},
-               docstring = "Truncated SVD dimensionality reduction",         # brief description
-               path = "MLJTSVDInterface.TSVDTransformer"
-               )
+MMI.metadata_model(
+    TSVDTransformer,
+    input_scitype = Union{MMI.Table(MMI.Continuous),AbstractMatrix{MMI.Continuous}},
+    output_scitype = Union{MMI.Table(MMI.Continuous),AbstractMatrix{MMI.Continuous}},
+    human_name = "truncated SVD transformer",
+    docstring = "Truncated SVD dimensionality reduction",         # brief description
+    path = "MLJTSVDInterface.TSVDTransformer"
+)
+
+"""
+$(MMI.doc_header(TSVDTransformer))
+
+This model performs linear dimension reduction. It differs from regular principal
+component analysis in that data is not centered, so that sparsity, if present, can be
+preserved during the computation. Text analysis is a common application.
+
+The truncated SVD is computed by Lanczos bidiagonalization. The Lanczos vectors are
+partially orthogonalized as described in R. M. Larsen, *Lanczos bidiagonalization with
+partial reorthogonalization*, Department of Computer Science, Aarhus University, Technical
+report, DAIMI PB-357, September 1998.
+
+# Training data
+
+In MLJ or MLJBase, bind an instance `model` to data with
+
+    mach = machine(model, X, y)
+
+Here:
+
+- `X` is any table of input features (eg, a `DataFrame`) whose columns are of scitype
+  `Continuous`; check the column scitypes with `schema(X)`; alternatively, `X` is any
+  `AbstractMatrix` with `Continuous` elements; check the scitype with `scitype(X)`.
+
+Train the machine using `fit!(mach, rows=...)`.
+
+# Operations
+
+- `transform(mach, Xnew)`: transform (project) observations in `Xnew` into their
+  lower-dimensional representations; `Xnew` should have the same scitype as `X`
+  above, and the object returned is a table or matrix according to the type of `X`.
+
+# Hyper-parameters
+
+- `nvals=2`: The output dimension (number of singular values)
+
+- `maxiter=1000`: The maximum number if iterations.
+
+- `rng=Random.GLOBAL_RNG`: The random number generator to use, either an `Int` seed, or an
+  `AbstractRNG`.
+
+# Fitted parameters
+
+The fields of `fitted_params(mach)` are:
+
+- `singular_values`: The estimated singular values, stored as a vector.
+
+- `components`: The estimated component vectors, stored as a matrix.
+
+- `is_table`: Whether or not `transform` returns a table or matrix.
+
+# Examples
+
+With tabular input:
+
+```julia
+using MLJ
+
+SVD = @load TSVDTransformer pkg=TSVD
+X, _ = @load_iris # `X`, a table
+svd = SVD(nvals=3)
+mach = machine(svd, X) |> fit!
+(; singular_values, components) =  fitted_params(mach)
+Xsmall = transform(mach, X) # a table
+
+to_matrix(x) = hcat(values(x)...)
+
+@assert sum(round.((to_matrix(Xsmall) * components') - to_matrix(X))) == 0
+```
+
+With sparse matrix input:
+
+```julia
+using MLJ
+using SparseArrays
+
+SVD = @load TSVDTransformer pkg=TSVD
+
+# sparse matrix with 10 rows (observations):
+I = rand(1:10, 100)
+J = rand(1:10^6, 100)
+K = rand(100)
+X = sparse(I, J, K, 10, 10^6)
+
+svd = SVD(nvals=4)
+mach = machine(svd, X) |> fit!
+Xsmall = transform(mach, X) # matrix with 10 rows but only 4 columns
+```
+
+"""
+TSVDTransformer
 
 end # module
