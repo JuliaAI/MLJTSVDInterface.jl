@@ -20,7 +20,7 @@ struct TSVDTransformerResult
 end
 
 as_matrix(X) = MMI.matrix(X)
-as_matrix(X::AbstractArray) = X
+as_matrix(X::AbstractMatrix) = X
 
 _get_rng(rng::Int) = MersenneTwister(rng)
 _get_rng(rng) = rng

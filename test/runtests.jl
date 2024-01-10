@@ -1,9 +1,10 @@
-using MLJTSVDInterface # substitute for correct interface pkg name
+using MLJTSVDInterface
 using Test
 using TSVD
 using MLJBase
 using SparseArrays
 using StableRNGs # for RNGs stable across all julia versions
+using MLJTestInterface
 
 const rng = StableRNGs.StableRNG(123)
 
@@ -48,7 +49,7 @@ const rng = StableRNGs.StableRNG(123)
     mach = machine(model, X)
     fit!(mach, verbosity=0)
     X_transformed = transform(mach, X)
-    
+
     @test length(keys(X_transformed)) == 2
 
     # test with default RNG
@@ -64,4 +65,20 @@ const rng = StableRNGs.StableRNG(123)
     @test size(X_transformed) == (10, 2)
     @test isapprox(s, fitted_params(mach).singular_values)
     @test size(V) == size(fitted_params(mach).components)
+end
+
+@testset "generic interface tests" begin
+    for data in first.([
+        MLJTestInterface.make_regression(),
+        MLJTestInterface.make_regression(row_table=true),
+        ])
+        failures, summary = MLJTestInterface.test(
+            [TSVDTransformer,],
+            data,
+            mod=@__MODULE__,
+            verbosity=2, # bump to debug
+            throw=false, # set to true to debug
+        )
+        @test isempty(failures)
+    end
 end
