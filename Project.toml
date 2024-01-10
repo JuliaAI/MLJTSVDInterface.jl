@@ -1,7 +1,7 @@
 name = "MLJTSVDInterface"
 uuid = "7fa162e1-0e29-41ca-a6fa-c000ca4e7e7e"
 authors = ["Anthony D. Blaom <anthony.blaom@gmail.com>", "Chris Alexander <uvapazzo@gmail.com>"]
-version = "0.1.5"
+version = "0.1.6"
 
 [deps]
 MLJBase = "a7f614a8-145f-11e9-1d2a-a57a1082229d"
